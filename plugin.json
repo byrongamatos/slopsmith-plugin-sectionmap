@@ -1,0 +1,7 @@
+{
+  "id": "section_map",
+  "name": "Section Map",
+  "version": "1.0.0",
+  "private": false,
+  "script": "screen.js"
+}
