@@ -40,6 +40,7 @@ function _smCreate() {
     player.insertBefore(_smBar, player.firstChild);
 
     _smBar.addEventListener('click', _smOnClick);
+    _smBar.addEventListener('wheel', _smOnWheel, { passive: false });
 }
 
 function _smRemove() {
@@ -64,6 +65,33 @@ function _smOnClick(e) {
     const wasPlaying = !audio.paused;
     if (wasPlaying) audio.pause();
     audio.currentTime = Math.max(0, time);
+    if (wasPlaying) {
+        audio.addEventListener('seeked', function resume() {
+            audio.removeEventListener('seeked', resume);
+            audio.play();
+        }, { once: true });
+    }
+}
+
+function _smOnWheel(e) {
+    if (!_smDuration) return;
+    e.preventDefault();
+
+    const audio = document.getElementById('audio');
+    if (!audio) return;
+
+    // Calculate time delta: up (negative deltaY) = forward, down (positive deltaY) = backward
+    const increment = e.ctrlKey ? 0.1 : 1; // Fine control with Ctrl modifier
+    const deltaTime = -(e.deltaY > 0 ? 1 : -1) * increment; // Negate to match scroll direction to time direction
+    const newTime = Math.max(0, Math.min(_smDuration, audio.currentTime + deltaTime));
+
+    // Update lastAudioTime to prevent the jump detector from resetting
+    if (typeof lastAudioTime !== 'undefined') lastAudioTime = newTime;
+
+    // Pause, seek, then resume — seeking during playback fails on unbuffered regions
+    const wasPlaying = !audio.paused;
+    if (wasPlaying) audio.pause();
+    audio.currentTime = newTime;
     if (wasPlaying) {
         audio.addEventListener('seeked', function resume() {
             audio.removeEventListener('seeked', resume);
