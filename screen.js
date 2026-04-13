@@ -57,9 +57,6 @@ function _smOnClick(e) {
     const audio = document.getElementById('audio');
     if (!audio) return;
 
-    // Clear any active loop to prevent it from fighting the seek
-    if (typeof clearLoop === 'function') clearLoop();
-
     // Update lastAudioTime to prevent the jump detector from resetting
     if (typeof lastAudioTime !== 'undefined') lastAudioTime = time;
 
